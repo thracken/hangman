@@ -1,4 +1,4 @@
-# hangman
+# Hangman
 A text-only hangman game that pulls a random word from an external "dictionary" file.
 
 This has one issue - if you guess a non alphanumeric character, the game accepts it as a guess, and (of course), it counts against you.
