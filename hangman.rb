@@ -1,4 +1,5 @@
 module Hangman
+  require "yaml"
   class Game
     def initialize
       @answer = Solution.new
@@ -8,12 +9,22 @@ module Hangman
 
     def game_start
       puts
-      puts "                 --- INSTRUCTIONS ---                      "
+      puts "                      --- INSTRUCTIONS ---                        "
       puts "Guess letters to see if you can figure out the hidden word."
       puts "If you get 6 letters wrong, you'll lose!"
-      puts "Press enter to continue..."
-      gets
-      play
+      puts
+      puts "At the start of any turn, type 'save' to save your game for later."
+      puts
+      puts "Press enter to continue, or type 'load' to load a saved game."
+      start = gets.chomp.downcase
+      if start == "load"
+        load_game
+        puts
+        puts "Saved game loaded!"
+        play
+      else
+        play
+      end
     end #game_start
 
     def play
@@ -40,7 +51,12 @@ module Hangman
     def get_guess
       puts
       puts "Enter a letter to guess."
-      guess = gets.chomp
+      guess = gets.chomp.downcase
+      if guess == "save"
+        save_game
+        puts "Game saved!"
+        return
+      end
       @answer.compare(guess)
     end #get_guess
 
@@ -67,6 +83,17 @@ module Hangman
       end
     end #play_again?
 
+    def load_game
+      @answer = YAML.load(File.read("save.txt"))
+      @display = @answer.hidden
+    end #load_game
+
+    def save_game
+      file = File.open("save.txt", "w")
+      YAML.dump(@answer, file)
+      file.close
+    end #save_game
+
   end #Game
 
   class Solution
@@ -84,10 +111,13 @@ module Hangman
     end #initialize
 
     def compare(guess)
-
       guess = guess.downcase
       if @guesses.include?(guess)
         puts "You've already guessed that, try again."
+        again = gets.chomp.downcase
+        compare(again)
+      elsif guess.length > 1
+        puts "You can only guess one letter at a time. Try again."
         again = gets.chomp.downcase
         compare(again)
       elsif guess.to_i.to_s == guess
